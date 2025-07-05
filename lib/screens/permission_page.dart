@@ -14,10 +14,17 @@ class PermissionPage extends StatefulWidget {
 class _PermissionPageState extends State<PermissionPage> {
   Future<bool> requestStoragePermission() async {
     if (Platform.isAndroid) {
+      // Android 11+
       if (await Permission.manageExternalStorage.isGranted) {
         return true;
       }
+
       var status = await Permission.manageExternalStorage.request();
+
+      if (status.isPermanentlyDenied) {
+        openAppSettings(); // redirige vers les paramètres
+      }
+
       return status.isGranted;
     }
     return false;
