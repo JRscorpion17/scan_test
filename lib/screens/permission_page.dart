@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:scan_test/screens/pdf_scanner_page.dart';
@@ -11,11 +13,14 @@ class PermissionPage extends StatefulWidget {
 
 class _PermissionPageState extends State<PermissionPage> {
   Future<bool> requestStoragePermission() async {
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      status = await Permission.storage.request();
+    if (Platform.isAndroid) {
+      if (await Permission.manageExternalStorage.isGranted) {
+        return true;
+      }
+      var status = await Permission.manageExternalStorage.request();
+      return status.isGranted;
     }
-    return status.isGranted;
+    return false;
   }
 
   @override
@@ -32,7 +37,9 @@ class _PermissionPageState extends State<PermissionPage> {
                 );
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const PdfScannerPage()),
+                  MaterialPageRoute(
+                    builder: (context) => const PdfScannerPage(),
+                  ),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(

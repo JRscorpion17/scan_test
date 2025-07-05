@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:file_picker/file_picker.dart';
@@ -29,9 +31,28 @@ class PdfScannerPageState extends State<PdfScannerPage> {
     }
   }
 
+  Future<bool> requestStoragePermission() async {
+    if (Platform.isAndroid) {
+      if (await Permission.manageExternalStorage.isGranted) {
+        return true;
+      }
+      var status = await Permission.manageExternalStorage.request();
+      return status.isGranted;
+    }
+    return false;
+  }
+
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
+    bool granted = await requestStoragePermission();
+    if (!granted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Permission Granted")));
+      return;
+    }
+
     scanPdfs();
   }
 
@@ -49,8 +70,8 @@ class PdfScannerPageState extends State<PdfScannerPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.refresh),
         onPressed: scanPdfs,
+        child: Icon(Icons.refresh),
       ),
     );
   }
