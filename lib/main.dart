@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scan_test/screens/permission_page.dart';
+import 'package:scan_test/screens/pdf_scanner_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -10,6 +10,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: PermissionPage());
+    return MaterialApp(home: PdfScannerPage());
   }
 }
