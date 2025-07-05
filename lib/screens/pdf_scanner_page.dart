@@ -1,52 +1,17 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:file_picker/file_picker.dart';
+import '../pdf_scanner.dart';
 
 class PdfScannerPage extends StatefulWidget {
   const PdfScannerPage({super.key});
 
   @override
-  PdfScannerPageState createState() => PdfScannerPageState();
+  _PdfScannerPageState createState() => _PdfScannerPageState();
 }
 
-class PdfScannerPageState extends State<PdfScannerPage> {
+class _PdfScannerPageState extends State<PdfScannerPage> {
   List<String> pdfFiles = [];
-
-  Future<void> scanPdfs() async {
-    bool granted = await Permission.storage.request().isGranted;
-    if (!granted) return;
-
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-      allowMultiple: true,
-    );
-
-    if (result != null) {
-      setState(() {
-        pdfFiles = result.paths.whereType<String>().toList();
-      });
-    }
-  }
-
-  Future<void> pickPdfFiles() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-      allowMultiple: true,
-    );
-
-    if (result != null) {
-      setState(() {
-        pdfFiles = result.paths.whereType<String>().toList();
-      });
-    } else {
-      // L'utilisateur a annulé
-      print("Aucun fichier sélectionné");
-    }
-  }
 
   Future<bool> requestStoragePermission() async {
     if (Platform.isAndroid) {
@@ -69,6 +34,7 @@ class PdfScannerPageState extends State<PdfScannerPage> {
   @override
   Future<void> initState() async {
     super.initState();
+
     bool granted = await requestStoragePermission();
     if (!granted) {
       ScaffoldMessenger.of(
@@ -80,26 +46,30 @@ class PdfScannerPageState extends State<PdfScannerPage> {
     scanPdfs();
   }
 
+  Future<void> scanPdfs() async {
+    final files = await PdfScanner.getAllPdfFiles();
+    setState(() {
+      pdfFiles = files;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("PDFs trouvés"),
-        actions: [IconButton(icon: Icon(Icons.add), onPressed: pickPdfFiles)],
-      ),
-      body: ListView.builder(
-        itemCount: pdfFiles.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(pdfFiles[index].split('/').last),
-            subtitle: Text(pdfFiles[index]),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: scanPdfs,
-        child: Icon(Icons.refresh),
-      ),
+      appBar: AppBar(title: Text("PDF trouvés")),
+      body:
+          pdfFiles.isEmpty
+              ? Center(child: Text("Aucun PDF trouvé"))
+              : ListView.builder(
+                itemCount: pdfFiles.length,
+                itemBuilder: (context, index) {
+                  final path = pdfFiles[index];
+                  return ListTile(
+                    title: Text(path.split('/').last),
+                    subtitle: Text(path),
+                  );
+                },
+              ),
     );
   }
 }

@@ -45,7 +45,7 @@ class _PermissionPageState extends State<PermissionPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const PdfScannerPage(),
+                    builder: (context) => PdfScannerPage(),
                   ),
                 );
               } else {
